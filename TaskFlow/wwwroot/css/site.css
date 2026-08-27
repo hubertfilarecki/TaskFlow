@@ -1,31 +1,46 @@
-html {
-  font-size: 14px;
+:root {
+  --page: #101318;
+  --surface: #181d25;
+  --surface-raised: #222936;
+  --border: #384252;
+  --text: #edf2f7;
+  --muted: #aeb9c8;
+  --accent: #5aa9ff;
+  --accent-hover: #83bdff;
+  --danger: #ef6b73;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
+html { font-size: 16px; min-height: 100%; }
+body { min-height: 100vh; margin: 0; background: var(--page); color: var(--text); }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.navbar {
+  background: #151a22 !important;
+  border-color: var(--border) !important;
 }
+.navbar-brand { color: var(--text) !important; font-weight: 700; letter-spacing: .02em; }
+.nav-link { color: var(--muted) !important; }
+.nav-link:hover, .nav-link:focus { color: var(--accent-hover) !important; }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
+/* The board column is only a layout wrapper; its panel owns the background. */
+.kanban-column { background: transparent !important; }
 
-body {
-  margin-bottom: 60px;
-}
+.footer { margin-top: 2rem; padding: 1rem 0; background: #151a22; border-color: var(--border) !important; color: var(--muted) !important; }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
+.btn-primary { background: #347fd1; border-color: #347fd1; color: #fff; }
+.btn-primary:hover, .btn-primary:focus { background: #4b98ed; border-color: #4b98ed; }
+.btn-secondary { background: #3c4757; border-color: #505d70; color: var(--text); }
+.btn-secondary:hover, .btn-secondary:focus { background: #505d70; border-color: #65738a; }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.form-control, .form-control:focus {
+  background: #121720;
+  color: var(--text);
+  border-color: var(--border);
 }
+.form-control::placeholder { color: #7f8a9b; }
+.form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(90, 169, 255, .18); }
+.form-label { color: var(--text); }
+.modal-content { background: var(--surface); color: var(--text); border-color: var(--border); }
+.modal-header, .modal-footer { border-color: var(--border); }
+.btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+.btn:focus-visible, .form-control:focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 2px; }

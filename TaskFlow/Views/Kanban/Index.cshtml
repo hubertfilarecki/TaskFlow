@@ -1,0 +1,229 @@
+@model List<TaskFlow.Models.WorkTask>
+
+@{
+    ViewData["Title"] = "Tablica zadań";
+}
+
+<style>
+    .kanban-page { max-width: 1500px; margin: 2.5rem auto; }
+    .kanban-heading { color: var(--text); font-weight: 700; }
+    .kanban-board { align-items: stretch; }
+    .kanban-column { display: flex; min-width: 0; }
+    .kanban-list {
+        min-height: 16rem;
+        flex: 1 1 auto;
+        background: #141922;
+        border-top: 1px solid var(--border);
+    }
+    .kanban-panel {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+    .kanban-panel .card-header { padding: .85rem 1rem; border-bottom: 0; color: var(--text); background: var(--surface-raised); }
+    .status-todo { border-color: #6f5a2b; }
+    .status-todo .card-header { border-left: 4px solid #e7b84b; background: #2a2519; }
+    .status-todo .kanban-list { background: #1f1c15; }
+    .status-progress { border-color: #315a83; }
+    .status-progress .card-header { border-left: 4px solid #5aa9ff; background: #182838; }
+    .status-progress .kanban-list { background: #131e2a; }
+    .status-review { border-color: #644584; }
+    .status-review .card-header { border-left: 4px solid #b990f0; background: #261d32; }
+    .status-review .kanban-list { background: #1d1727; }
+    .status-done { border-color: #3f7655; }
+    .status-done .card-header { border-left: 4px solid #63c78c; background: #182a20; }
+    .status-done .kanban-list { background: #142018; }
+    .task-card { position: relative; background: var(--surface-raised); border: 1px solid #414d60; box-shadow: none; cursor: grab; }
+    .task-card:hover { border-color: #5a6a81; }
+    .task-card:active { cursor: grabbing; }
+    .task-card.dragging { opacity: .45; }
+    .kanban-list.drag-over { outline: 2px dashed #7ab8ff; outline-offset: -5px; background-color: #27364a; }
+    .task-card .card-body { color: var(--text); }
+    .task-card .card-title { padding-right: 3.75rem; color: var(--text); font-weight: 600; }
+    .task-card .card-text { color: var(--muted) !important; }
+    .task-card s { color: #9ca9b9; }
+    .priority-badge { color: #263241; font-weight: 600; }
+    .task-card[data-task-priority="0"] .priority-badge { background: #cfe8cf; }
+    .task-card[data-task-priority="1"] .priority-badge { background: #dbe7f5; }
+    .task-card[data-task-priority="2"] .priority-badge { background: #ffe8b5; }
+    .task-card[data-task-priority="3"] .priority-badge { background: #f6c7c7; }
+    .task-actions { position: absolute; top: .45rem; right: .45rem; display: flex; gap: .25rem; opacity: 0; transition: opacity .15s ease; }
+    .task-card:hover .task-actions, .task-card:focus-within .task-actions { opacity: 1; }
+    .task-icon-btn { display: grid; width: 1.85rem; height: 1.85rem; place-items: center; padding: 0; color: #c7d2e2; background: #202a38; border: 1px solid #4a5870; border-radius: .3rem; cursor: pointer; }
+    .task-icon-btn svg { width: 1rem; height: 1rem; fill: currentColor; }
+    .task-icon-btn:hover, .task-icon-btn:focus { color: #fff; background: #356da7; border-color: #76aff0; }
+    .delete-btn:hover, .delete-btn:focus { background: #a64450; border-color: #e1727a; }
+    @@media (max-width: 767px) { .kanban-page { margin-top: 1.5rem; } }
+</style>
+
+<div class="container-fluid kanban-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="kanban-heading h2 mb-1">Tablica zadań</h1>
+            <p class="text-muted mb-0">Zarządzaj zadaniami w jednym miejscu.</p>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">Dodaj zadanie</button>
+    </div>
+
+    <div class="row g-3 kanban-board">
+        <div class="col-md-6 col-xl-3 kanban-column">
+            <section class="card kanban-panel status-todo">
+                <div class="card-header fw-bold">Do zrobienia</div>
+                <div class="card-body p-2 kanban-list" id="todo-column" data-status="0">
+                    @foreach (var task in Model.Where(t => t.Status == TaskFlow.Models.WorkTaskStatus.Todo))
+                    {
+                        <partial name="~/Views/Kanban/_TaskCard.cshtml" model="task" />
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-md-6 col-xl-3 kanban-column">
+            <section class="card kanban-panel status-progress">
+                <div class="card-header fw-bold">W toku</div>
+                <div class="card-body p-2 kanban-list" id="inprogress-column" data-status="1">
+                    @foreach (var task in Model.Where(t => t.Status == TaskFlow.Models.WorkTaskStatus.InProgress))
+                    {
+                        <partial name="~/Views/Kanban/_TaskCard.cshtml" model="task" />
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-md-6 col-xl-3 kanban-column">
+            <section class="card kanban-panel status-review">
+                <div class="card-header fw-bold">Do sprawdzenia</div>
+                <div class="card-body p-2 kanban-list" id="review-column" data-status="2">
+                    @foreach (var task in Model.Where(t => t.Status == TaskFlow.Models.WorkTaskStatus.Review))
+                    {
+                        <partial name="~/Views/Kanban/_TaskCard.cshtml" model="task" />
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-md-6 col-xl-3 kanban-column">
+            <section class="card kanban-panel status-done">
+                <div class="card-header fw-bold">Gotowe</div>
+                <div class="card-body p-2 kanban-list" id="done-column" data-status="3">
+                    @foreach (var task in Model.Where(t => t.Status == TaskFlow.Models.WorkTaskStatus.Done))
+                    {
+                        <partial name="~/Views/Kanban/_TaskCard.cshtml" model="task" />
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="editTaskModalLabel">Edytuj zadanie</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTaskForm">
+                    <input type="hidden" id="editTaskId">
+                    <div class="mb-3">
+                        <label for="editTaskTitle" class="form-label">Tytuł *</label>
+                        <input type="text" class="form-control" id="editTaskTitle" required maxlength="200">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTaskDescription" class="form-label">Opis</label>
+                        <textarea class="form-control" id="editTaskDescription" maxlength="1000" rows="4"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTaskPriority" class="form-label">Ważność</label>
+                        <select class="form-select" id="editTaskPriority">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                            <option value="3">Very High</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTaskAssignee" class="form-label">Przypisana osoba</label>
+                        <input type="text" class="form-control" id="editTaskAssignee" maxlength="100" placeholder="Np. Jan Kowalski">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="editTaskTimeHours" class="form-label">Czas pracy — godziny</label>
+                            <input type="number" class="form-control" id="editTaskTimeHours" min="0" step="1" value="0">
+                        </div>
+                        <div class="col-6">
+                            <label for="editTaskTimeMinutes" class="form-label">Czas pracy — minuty</label>
+                            <input type="number" class="form-control" id="editTaskTimeMinutes" min="0" max="59" step="1" value="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTaskDueDate" class="form-label">Termin wykonania</label>
+                        <input type="date" class="form-control" id="editTaskDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" id="updateTaskBtn">Zapisz zmiany</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addTaskModalLabel">Nowe zadanie</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm">
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">Tytuł *</label>
+                        <input type="text" class="form-control" id="taskTitle" name="title" required maxlength="200">
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Opis</label>
+                        <textarea class="form-control" id="taskDescription" name="description" maxlength="1000" rows="4"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskPriority" class="form-label">Ważność</label>
+                        <select class="form-select" id="taskPriority" name="priority">
+                            <option value="0" selected>Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                            <option value="3">Very High</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskAssignee" class="form-label">Przypisana osoba</label>
+                        <input type="text" class="form-control" id="taskAssignee" name="assignee" maxlength="100" placeholder="Np. Jan Kowalski">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="taskTimeHours" class="form-label">Czas pracy — godziny</label>
+                            <input type="number" class="form-control" id="taskTimeHours" min="0" step="1" value="0">
+                        </div>
+                        <div class="col-6">
+                            <label for="taskTimeMinutes" class="form-label">Czas pracy — minuty</label>
+                            <input type="number" class="form-control" id="taskTimeMinutes" min="0" max="59" step="1" value="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskDueDate" class="form-label">Termin wykonania</label>
+                        <input type="date" class="form-control" id="taskDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" id="saveTaskBtn">Dodaj zadanie</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/kanban.js" asp-append-version="true"></script>

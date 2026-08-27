@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow.Data;
 
@@ -11,9 +12,11 @@ using TaskFlow.Data;
 namespace TaskFlow.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827092745_AddTaskPriorityAndAssignee")]
+    partial class AddTaskPriorityAndAssignee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,10 +47,6 @@ namespace TaskFlow.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasJsonPropertyName("description");
 
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2")
-                        .HasJsonPropertyName("dueDate");
-
                     b.Property<int>("Priority")
                         .HasColumnType("int")
                         .HasJsonPropertyName("priority");
@@ -55,10 +54,6 @@ namespace TaskFlow.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int")
                         .HasJsonPropertyName("status");
-
-                    b.Property<int>("TimeSpentMinutes")
-                        .HasColumnType("int")
-                        .HasJsonPropertyName("timeSpentMinutes");
 
                     b.Property<string>("Title")
                         .IsRequired()

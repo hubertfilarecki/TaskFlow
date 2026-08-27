@@ -10,6 +10,6 @@ namespace TaskFlow.Data
         {
         }
 
-        public DbSet<Project> Projects { get; set; }
+        public DbSet<WorkTask> Tasks { get; set; }
     }
 }

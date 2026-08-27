@@ -1,0 +1,43 @@
+@model TaskFlow.Models.WorkTask
+
+@{
+    var priorityLabel = Model.Priority switch
+    {
+        TaskFlow.Models.WorkTaskPriority.Low => "Low",
+        TaskFlow.Models.WorkTaskPriority.High => "High",
+        TaskFlow.Models.WorkTaskPriority.VeryHigh => "Very High",
+        _ => "Medium"
+    };
+    var timeHours = Model.TimeSpentMinutes / 60;
+    var timeMinutes = Model.TimeSpentMinutes % 60;
+}
+
+<div class="card mb-2 task-card" data-task-id="@Model.Id" data-task-title="@Model.Title" data-task-description="@Model.Description" data-task-priority="@((int)Model.Priority)" data-task-assignee="@Model.Assignee" data-task-time-spent-minutes="@Model.TimeSpentMinutes" data-task-due-date="@Model.DueDate?.ToString("yyyy-MM-dd")" draggable="true">
+    <div class="card-body p-3">
+        <h3 class="card-title h6 mb-2">@if (Model.Status == TaskFlow.Models.WorkTaskStatus.Done) { <s>@Model.Title</s> } else { @Model.Title }</h3>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="card-text small mb-3">@if (Model.Status == TaskFlow.Models.WorkTaskStatus.Done) { <s>@Model.Description</s> } else { @Model.Description }</p>
+        }
+        <div class="d-flex flex-wrap gap-2 small mb-1">
+            <span class="badge priority-badge">Ważność: @priorityLabel</span>
+            @if (!string.IsNullOrWhiteSpace(Model.Assignee))
+            {
+                <span class="badge text-bg-info">Osoba: @Model.Assignee</span>
+            }
+            <span class="badge text-bg-light">Czas: @timeHours h @timeMinutes min</span>
+            @if (Model.DueDate.HasValue)
+            {
+                <span class="badge text-bg-warning">Termin: @Model.DueDate.Value.ToString("dd.MM.yyyy")</span>
+            }
+        </div>
+        <div class="task-actions" aria-label="Akcje zadania">
+            <button type="button" class="task-icon-btn edit-btn" aria-label="Edytuj zadanie" title="Edytuj zadanie">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.15.85a1.5 1.5 0 0 1 2.12 2.12l-8.9 8.9-3.06.94.94-3.06 8.9-8.9ZM2.9 10.37l-.42 1.36 1.36-.42 8.96-8.96-.94-.94-8.96 8.96Z" /></svg>
+            </button>
+            <button type="button" class="task-icon-btn delete-btn" aria-label="Usuń zadanie" title="Usuń zadanie">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4l.75 1H14v1H2V2h3.25L6 1Zm-2 3h8l-.65 11H4.65L4 4Zm3 2v7h1V6H7Zm2 0v7h1V6H9Z" /></svg>
+            </button>
+        </div>
+    </div>
+</div>

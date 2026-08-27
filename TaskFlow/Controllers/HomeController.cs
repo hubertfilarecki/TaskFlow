@@ -1,19 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using TaskFlow.Data;
 using TaskFlow.Models;
 
 namespace TaskFlow.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context;
+
+        public HomeController(AppDbContext context)
         {
-            return View();
+            _context = context;
         }
 
-        public IActionResult Privacy()
+        public IActionResult Index()
         {
-            return View();
+            var tasks = _context.Tasks.OrderBy(t => t.CreatedAt).ToList();
+            return View("~/Views/Kanban/Index.cshtml", tasks);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
